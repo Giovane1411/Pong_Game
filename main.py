@@ -3,15 +3,20 @@ pygame.init() # inicia as multimidia do pygame para exibir áudio, animaçoes...
 
 display = pygame.display.set_mode((1280, 720)) # Define a resolução da tela do jogo 
 
-player1 = pygame.Rect(0, 0, 30, 150) # Definindo o retângulo do jogador 1
+campo_img = pygame.image.load("assets/bg.png")
+campo = campo_img.get_rect()
+
+player1_img = pygame.image.load("assets/player1.png")
+player1 = player1_img.get_rect()# Definindo o retângulo do jogador 1
 player1_speed = 12 # Velocidade do jogador 1
 player1_score = 0
 
-
-player2 = pygame.Rect(1250, 0, 30, 150) # Definindo o retângulo do jogador 2
+player2_img = pygame.image.load("assets/player2.png")
+player2 = player1_img.get_rect(right = 1200) # Definindo o retângulo do jogador 2
 player2_score = 0
 
-ball = pygame.Rect(600,350, 15, 15) # Definindo o retângulo da bola
+ball_img = pygame.image.load("assets/ball.png") # Definindo o retângulo da bola
+ball = ball_img.get_rect(center=[1280/2, 720/2])
 ball_dir_x = 12 # A bola movimenta na direção x
 ball_dir_y = 12 # A bola movimente na direção y
 
@@ -19,6 +24,16 @@ font = pygame.font.Font(None, 50)
 placar_player1 = font.render(str(player1_score), True, "white")
 placar_player2 = font.render(str(player2_score), True, "white")
 
+menu_img = pygame.image.load("assets/menu.png")
+menu = menu_img.get_rect()
+
+gameover_img = pygame.image.load("assets/gameover.png")
+gameover = gameover_img.get_rect()
+
+fade_img = pygame.Surface((1280, 720)).convert_alpha()
+fade = fade_img.get_rect()
+fade_img.fill("black")
+fade_alpha = 255
 
 # Para exibir a tela é preciso sempre deixar em loop True
 loop = True
@@ -42,6 +57,7 @@ while loop:
                     player1_speed = 12 # Define a velocidade do jogador 1 para baixo
         if player1_score >=3:
             cena = "gameover"
+            fade_alpha = 255
         
         if player2_score >= 3:
             cena = "gameover"
@@ -65,7 +81,7 @@ while loop:
             ball_dir_x *= -1
         elif ball.x >= 1280: # Não deixa passar a bola no lado direito no eixo x
             #ball.x = 600
-            player_score +=1
+            player1_score +=1
             placar_player1 = font.render(str(player1_score), True, "white")
             ball_dir_x *= -1
 
@@ -79,13 +95,17 @@ while loop:
 
         player2.y = ball.y - 75  # Comando faz com que a bola quica no meio do player dois  
 
+        if fade_alpha > 0:
+            fade_alpha -= 1
+            fade_img.set_alpha(fade_alpha)
         
 
 
         display.fill("black")  # Qual cor de fundo na tela
-        pygame.draw.rect(display, "green", player1) # Desenha o retângulo do jogador 1
-        pygame.draw.rect(display, "green", player2) # Desenha o retângulo do jogador 2
-        pygame.draw.circle(display, "green", ball.center, 8) # Desenha o círculo da bolinha, definindo um raio 8
+        display.blit(campo_img, campo)
+        display.blit(player1_img, player1) # Desenha o jogador 1 na tela
+        display.blit(player2_img, player2) # Desenha o jogador 2 na tela
+        display.blit(ball_img, ball) # Desenha a bola na tela
         display.blit(placar_player1, (500,50))
         display.blit(placar_player2, (780,50))
     elif cena == "gameover":
@@ -96,9 +116,13 @@ while loop:
                 if event.key == pygame.K_RETURN:
                     cena = "menu"
 
+        if fade_alpha > 0:
+            fade_alpha -= 10 
+            fade_img.set_alpha(fade_alpha)    
+
         display.fill((0,0,0))
-        text_win = font.render("Game Over", True, "white")
-        display.blit(text_win, (540,360))
+        display.blit(gameover_img, gameover)
+    
 
     elif cena == "menu":
         for event in pygame.event.get():
@@ -115,12 +139,14 @@ while loop:
                     ball.x = 640
                     ball.y = 320
                     cena = "jogo"    
+        if fade_alpha > 0:
+            fade_alpha -= 10
+            fade_img.set_alpha(fade_alpha)
 
         display.fill((0,0,0))
-        title = font.render("My Game", True, "white")
-        text = font.render("Press Star to Play", True, "white")
-        display.blit(title, (500,260))
-        display.blit(text, (500,360))
+        display.blit(menu_img, menu)
+        display.blit(fade_img, fade)
+
 
     fps.tick(60)    
     pygame.display.flip()
